@@ -1,0 +1,56 @@
+graph LR
+    subgraph 情感输入["🎭 情感输入源"]
+        NLP["NLP情感分析<br/>(文本情绪识别)"]
+        VOICE["语音情感分析<br/>(语调/语速/音高)"]
+        MANUAL["手动情感设置<br/>(API调用)"]
+    end
+
+    subgraph 情感引擎["🧠 情感映射引擎 (EmotionEngine)"]
+        direction TB
+        CLASSIFY["情感分类器<br/>EmotionClassifier"]
+        PARAM["参数映射器<br/>EmotionParameterMapper"]
+        LERP_E["情感插值器<br/>EmotionLerp"]
+
+        CLASSIFY --> PARAM
+        PARAM --> LERP_E
+    end
+
+    subgraph 情感预设["🎨 情感预设库 (EmotionPresets)"]
+        direction TB
+        HAPPY["😊 开心 Happy<br/>色相: 180° (青蓝)<br/>振幅: 0.8~1.0<br/>速度: 1.2x<br/>间距: 紧密"]
+        SAD["😢 难过 Sad<br/>色相: 270° (紫色)<br/>振幅: 0.3~0.6<br/>速度: 0.6x<br/>间距: 稀疏"]
+        CALM["😌 平静 Calm<br/>色相: 0° (白/灰)<br/>振幅: 0.1~0.3<br/>速度: 0.4x<br/>间距: 均匀"]
+        ANGRY["😠 愤怒 Angry<br/>色相: 0° (红色)<br/>振幅: 0.9~1.0<br/>速度: 1.5x<br/>间距: 不规则"]
+        EXCITED["🤩 兴奋 Excited<br/>色相: 60° (金黄)<br/>振幅: 0.7~1.0<br/>速度: 1.8x<br/>间距: 跳跃"]
+        NEUTRAL["😐 中性 Neutral<br/>色相: 210° (蓝灰)<br/>振幅: 0.2~0.4<br/>速度: 0.8x<br/>间距: 均匀"]
+    end
+
+    subgraph 视觉参数["📊 视觉输出参数"]
+        COLOR["颜色<br/>(色相/饱和度/亮度)"]
+        AMP["振幅范围<br/>(最小/最大)"]
+        SPEED["动画速度<br/>(倍率)"]
+        SPACING["条形间距<br/>(密集/稀疏)"]
+        PATTERN["波动模式<br/>(规则/不规则)"]
+        GLOW["发光强度<br/>(0~1)"]
+    end
+
+    NLP --> CLASSIFY
+    VOICE --> CLASSIFY
+    MANUAL --> CLASSIFY
+
+    LERP_E --> COLOR
+    LERP_E --> AMP
+    LERP_E --> SPEED
+    LERP_E --> SPACING
+    LERP_E --> PATTERN
+    LERP_E --> GLOW
+
+    classDef inputNode fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    classDef engineNode fill:#7B68EE,stroke:#5A4FCF,color:#fff
+    classDef presetNode fill:#2ECC71,stroke:#1A9B4B,color:#fff
+    classDef outputNode fill:#F39C12,stroke:#D68910,color:#fff
+
+    class NLP,VOICE,MANUAL inputNode
+    class CLASSIFY,PARAM,LERP_E engineNode
+    class HAPPY,SAD,CALM,ANGRY,EXCITED,NEUTRAL presetNode
+    class COLOR,AMP,SPEED,SPACING,PATTERN,GLOW outputNode

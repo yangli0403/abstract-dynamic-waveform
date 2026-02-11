@@ -1,0 +1,99 @@
+graph TD
+    subgraph 用户层["🎤 用户交互层"]
+        MIC["麦克风输入"]
+        UI["UI控制面板"]
+        THEME["主题/样式配置"]
+    end
+
+    subgraph 状态管理层["🧠 状态管理层"]
+        SM["AgentState 状态机"]
+        SM -->|connecting| S1["连接中"]
+        SM -->|initializing| S2["初始化中"]
+        SM -->|listening| S3["聆听中"]
+        SM -->|thinking| S4["思考中"]
+        SM -->|speaking| S5["说话中"]
+    end
+
+    subgraph 情感映射层["🎭 情感映射层 (新增)"]
+        EC["情感分类器"]
+        EP["情感预设库<br/>(Happy/Sad/Calm/Angry/Excited/Neutral)"]
+        EPM["参数映射器<br/>(情绪→颜色/振幅/速度/间距/发光)"]
+        EL["情感插值器<br/>(平滑过渡)"]
+        EC --> EP
+        EP --> EPM
+        EPM --> EL
+    end
+
+    subgraph 音频处理层["🔊 音频处理层"]
+        AA["音频分析器<br/>(Web Audio API)"]
+        MB["多频段分解<br/>(FFT → N bands)"]
+        VOL["音量计算<br/>(RMS/Peak)"]
+    end
+
+    subgraph 动画引擎层["🎬 动画引擎层"]
+        SEQ["序列生成器"]
+        LERP["插值引擎<br/>(Lerp平滑过渡)"]
+        RAF["requestAnimationFrame<br/>动画循环"]
+    end
+
+    subgraph 渲染层["🎨 渲染层"]
+        subgraph Canvas渲染["Canvas 渲染器 (SiriWave路线)"]
+            CLC["经典波形<br/>(衰减函数+正弦叠加)"]
+            IOS9["iOS9多色波形<br/>(动态生成/消亡)"]
+        end
+        subgraph DOM渲染["DOM 渲染器 (LiveKit路线)"]
+            BAR["条形可视化器"]
+            GRID["网格可视化器"]
+            RADIAL["径向可视化器"]
+        end
+    end
+
+    subgraph 输出层["📺 输出层"]
+        CANVAS["Canvas元素"]
+        DOMOUT["DOM元素组"]
+    end
+
+    MIC --> AA
+    MIC --> EC
+    UI --> SM
+    UI --> THEME
+    THEME --> Canvas渲染
+    THEME --> DOM渲染
+
+    AA --> MB
+    MB --> VOL
+    VOL --> LERP
+
+    SM --> SEQ
+    SM --> EC
+    EL --> RAF
+    SEQ --> RAF
+    LERP --> RAF
+
+    RAF --> CLC
+    RAF --> IOS9
+    RAF --> BAR
+    RAF --> GRID
+    RAF --> RADIAL
+
+    CLC --> CANVAS
+    IOS9 --> CANVAS
+    BAR --> DOMOUT
+    GRID --> DOMOUT
+    RADIAL --> DOMOUT
+
+    classDef userLayer fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    classDef stateLayer fill:#7B68EE,stroke:#5A4FCF,color:#fff
+    classDef emotionLayer fill:#E91E63,stroke:#C2185B,color:#fff
+    classDef audioLayer fill:#2ECC71,stroke:#1A9B4B,color:#fff
+    classDef animLayer fill:#F39C12,stroke:#D68910,color:#fff
+    classDef renderLayer fill:#E74C3C,stroke:#C0392B,color:#fff
+    classDef outputLayer fill:#1ABC9C,stroke:#16A085,color:#fff
+
+    class MIC,UI,THEME userLayer
+    class SM,S1,S2,S3,S4,S5 stateLayer
+    class EC,EP,EPM,EL emotionLayer
+    class AA,MB,VOL audioLayer
+    class SEQ,LERP,RAF animLayer
+    class CLC,IOS9,BAR,GRID,RADIAL renderLayer
+    class CANVAS,DOMOUT outputLayer

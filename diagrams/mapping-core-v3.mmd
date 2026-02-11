@@ -1,0 +1,91 @@
+graph LR
+    subgraph 多维音频输入["🎵 多维音频输入"]
+        VOL["🔊 音量 Volume<br/>RMS振幅 (0.0~1.0)"]
+        PITCH["🎵 音调 Pitch<br/>基频F0 (Hz)"]
+        SPEED["🗣️ 语速 Speed<br/>语音活动率 (0.0~1.0)"]
+        EMO["💜 情感 Emotion<br/>EmotionType枚举"]
+    end
+
+    subgraph 映射核心["⚡ 专利映射核心"]
+        subgraph 通道1["通道1: 情感 → 颜色 Color"]
+            E2C_MAP["情感预设查找"]
+            E2C_HUE["色相映射<br/>Happy→180° Sad→270°<br/>Calm→0° Angry→0°"]
+            E2C_SAT["饱和度映射<br/>高能量→高饱和<br/>低能量→低饱和"]
+            E2C_LIT["亮度映射<br/>正面→高亮度<br/>负面→低亮度"]
+            E2C_MAP --> E2C_HUE
+            E2C_MAP --> E2C_SAT
+            E2C_MAP --> E2C_LIT
+        end
+
+        subgraph 通道2["通道2: 特征 → 形态 Shape"]
+            F2S_AMP["振幅映射<br/>Volume → 条形高度"]
+            F2S_GAP["间距映射<br/>Pitch → 条形间距<br/>高音调→紧密 低音调→稀疏"]
+            F2S_CNT["条数映射<br/>Volume+Pitch → 活跃条数"]
+            F2S_VAR["形变映射<br/>Pitch变化率 → 高度方差"]
+        end
+
+        subgraph 通道3["通道3: 节奏 → 动态 Dynamic"]
+            R2D_SPD["速度映射<br/>Speed → 动画帧率倍数"]
+            R2D_PAT["模式映射<br/>Speed+Volume → 波动模式<br/>快速→跳动 慢速→呼吸"]
+            R2D_GLW["发光映射<br/>Volume峰值 → 发光强度"]
+            R2D_TRN["过渡映射<br/>Speed变化率 → 过渡时长"]
+        end
+
+        LERP["🔄 全通道插值器<br/>HSL色彩插值 + 数值线性插值<br/>过渡时长: 200~800ms"]
+    end
+
+    subgraph 视觉输出["📊 视觉输出参数 (FrameData)"]
+        OUT_CLR["颜色 HSL<br/>(色相/饱和度/亮度)"]
+        OUT_AMP["振幅<br/>(0.0~1.0)"]
+        OUT_GAP["间距<br/>(px)"]
+        OUT_CNT["活跃条数<br/>(整数)"]
+        OUT_SPD["动画速度<br/>(倍率)"]
+        OUT_PAT["波动模式<br/>(枚举)"]
+        OUT_GLW["发光强度<br/>(0.0~1.0)"]
+    end
+
+    EMO --> E2C_MAP
+    VOL --> F2S_AMP
+    VOL --> F2S_CNT
+    VOL --> R2D_GLW
+    VOL --> R2D_PAT
+    PITCH --> F2S_GAP
+    PITCH --> F2S_CNT
+    PITCH --> F2S_VAR
+    SPEED --> R2D_SPD
+    SPEED --> R2D_PAT
+    SPEED --> R2D_TRN
+
+    E2C_HUE --> LERP
+    E2C_SAT --> LERP
+    E2C_LIT --> LERP
+    F2S_AMP --> LERP
+    F2S_GAP --> LERP
+    F2S_CNT --> LERP
+    F2S_VAR --> LERP
+    R2D_SPD --> LERP
+    R2D_PAT --> LERP
+    R2D_GLW --> LERP
+    R2D_TRN --> LERP
+
+    LERP --> OUT_CLR
+    LERP --> OUT_AMP
+    LERP --> OUT_GAP
+    LERP --> OUT_CNT
+    LERP --> OUT_SPD
+    LERP --> OUT_PAT
+    LERP --> OUT_GLW
+
+    classDef inputNode fill:#2ECC71,stroke:#1A9B4B,color:#fff
+    classDef ch1Node fill:#E91E63,stroke:#C2185B,color:#fff
+    classDef ch2Node fill:#FF9800,stroke:#F57C00,color:#fff
+    classDef ch3Node fill:#00BCD4,stroke:#0097A7,color:#fff
+    classDef lerpNode fill:#9C27B0,stroke:#7B1FA2,color:#fff
+    classDef outputNode fill:#FFC107,stroke:#FFA000,color:#333
+
+    class VOL,PITCH,SPEED,EMO inputNode
+    class E2C_MAP,E2C_HUE,E2C_SAT,E2C_LIT ch1Node
+    class F2S_AMP,F2S_GAP,F2S_CNT,F2S_VAR ch2Node
+    class R2D_SPD,R2D_PAT,R2D_GLW,R2D_TRN ch3Node
+    class LERP lerpNode
+    class OUT_CLR,OUT_AMP,OUT_GAP,OUT_CNT,OUT_SPD,OUT_PAT,OUT_GLW outputNode

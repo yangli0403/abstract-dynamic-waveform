@@ -1,0 +1,108 @@
+graph TD
+    subgraph 用户层["🎤 用户交互层"]
+        UI["UI控制面板"]
+        THEME["主题/样式配置"]
+    end
+
+    subgraph 多维音频输入["🎵 多维音频输入层"]
+        MIC["麦克风输入<br/>(MediaStream)"]
+        VOL["🔊 音量 Volume<br/>(RMS/Peak振幅)"]
+        PITCH["🎵 音调 Pitch<br/>(基频F0检测)"]
+        SPEED["🗣️ 语速 Speed<br/>(VAD语音活动率)"]
+        EMO["💜 情感 Emotion<br/>(语调/能量/节奏特征)"]
+        MIC --> VOL
+        MIC --> PITCH
+        MIC --> SPEED
+        MIC --> EMO
+    end
+
+    subgraph 状态管理层["🧠 状态管理层"]
+        SM["AgentState 状态机"]
+        S1["connecting"]
+        S2["initializing"]
+        S3["listening"]
+        S4["thinking"]
+        S5["speaking"]
+        SM --> S1
+        SM --> S2
+        SM --> S3
+        SM --> S4
+        SM --> S5
+    end
+
+    subgraph 映射核心["⚡ 专利映射核心 (实时映射算法)"]
+        direction TB
+        CH1["通道1: 情感 → 颜色 Color<br/>(EmotionType → HSL色彩)"]
+        CH2["通道2: 特征 → 形态 Shape<br/>(Pitch+Volume → 振幅/间距/条数)"]
+        CH3["通道3: 节奏 → 动态 Dynamic<br/>(Speed+Volume → 速度/模式/发光)"]
+        LERP_ALL["全通道插值器<br/>(Lerp平滑过渡)"]
+        CH1 --> LERP_ALL
+        CH2 --> LERP_ALL
+        CH3 --> LERP_ALL
+    end
+
+    subgraph 动画引擎层["🎬 动画引擎层"]
+        SEQ["序列生成器"]
+        RAF["requestAnimationFrame<br/>动画循环 (60fps)"]
+        SEQ --> RAF
+    end
+
+    subgraph 渲染层["🎨 渲染层"]
+        subgraph Canvas渲染["Canvas 渲染器"]
+            CLC["经典波形"]
+            IOS9["iOS9多色波形"]
+        end
+        subgraph DOM渲染["DOM 渲染器"]
+            BAR["条形可视化器"]
+            GRID["网格可视化器"]
+            RADIAL["径向可视化器"]
+        end
+    end
+
+    subgraph 输出层["📺 情感可视化输出"]
+        HAPPY["😊 开心 Happy<br/>青蓝色·高振幅·活跃"]
+        SAD["😢 难过 Sad<br/>紫色·低振幅·稀疏"]
+        CALM["😌 平静 Calm<br/>白灰色·均匀·静止"]
+    end
+
+    UI --> SM
+    UI --> THEME
+    THEME --> 渲染层
+
+    VOL --> CH2
+    VOL --> CH3
+    PITCH --> CH2
+    SPEED --> CH3
+    EMO --> CH1
+
+    SM --> SEQ
+    LERP_ALL --> RAF
+
+    RAF --> CLC
+    RAF --> IOS9
+    RAF --> BAR
+    RAF --> GRID
+    RAF --> RADIAL
+
+    CLC --> HAPPY
+    CLC --> SAD
+    CLC --> CALM
+    BAR --> HAPPY
+    BAR --> SAD
+    BAR --> CALM
+
+    classDef userLayer fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    classDef audioLayer fill:#2ECC71,stroke:#1A9B4B,color:#fff
+    classDef stateLayer fill:#7B68EE,stroke:#5A4FCF,color:#fff
+    classDef mappingLayer fill:#00BCD4,stroke:#0097A7,color:#fff
+    classDef animLayer fill:#F39C12,stroke:#D68910,color:#fff
+    classDef renderLayer fill:#E74C3C,stroke:#C0392B,color:#fff
+    classDef outputLayer fill:#1A1A2E,stroke:#00BCD4,color:#fff
+
+    class UI,THEME userLayer
+    class MIC,VOL,PITCH,SPEED,EMO audioLayer
+    class SM,S1,S2,S3,S4,S5 stateLayer
+    class CH1,CH2,CH3,LERP_ALL mappingLayer
+    class SEQ,RAF animLayer
+    class CLC,IOS9,BAR,GRID,RADIAL renderLayer
+    class HAPPY,SAD,CALM outputLayer

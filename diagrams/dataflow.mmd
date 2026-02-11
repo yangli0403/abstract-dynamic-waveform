@@ -1,0 +1,45 @@
+sequenceDiagram
+    participant User as 用户
+    participant Mic as 麦克风
+    participant AudioCtx as Web Audio API
+    participant Analyzer as 音频分析器
+    participant StateMachine as 状态机
+    participant SeqGen as 序列生成器
+    participant AnimLoop as 动画循环
+    participant Renderer as 渲染器
+    participant Display as 显示输出
+
+    Note over User,Display: 场景1：用户开始说话（音频输入驱动可视化）
+
+    User->>Mic: 开始说话
+    Mic->>AudioCtx: 音频流 (MediaStream)
+    AudioCtx->>Analyzer: PCM数据
+    Analyzer->>Analyzer: FFT变换 → 频谱数据
+    Analyzer->>StateMachine: 检测到语音活动
+    StateMachine->>StateMachine: listening → speaking
+    StateMachine->>SeqGen: 状态变更通知
+    SeqGen->>SeqGen: 切换为音量驱动模式
+
+    loop 每帧 (60fps)
+        Analyzer->>AnimLoop: 多频段音量数据 [0.0~1.0]
+        SeqGen->>AnimLoop: 当前动画参数
+        AnimLoop->>Renderer: 绘制指令 (amplitude, bands[])
+        Renderer->>Display: Canvas绘制 / DOM更新
+    end
+
+    Note over User,Display: 场景2：AI正在思考（状态驱动动画）
+
+    User->>StateMachine: 发送消息完毕
+    StateMachine->>StateMachine: speaking → thinking
+    StateMachine->>SeqGen: 状态变更通知
+    SeqGen->>SeqGen: 生成thinking动画序列
+
+    loop 每帧 (60fps)
+        SeqGen->>AnimLoop: 序列索引 (自增)
+        AnimLoop->>Renderer: 绘制指令 (sequence[idx])
+        Renderer->>Display: Canvas绘制 / DOM更新
+    end
+
+    StateMachine->>StateMachine: thinking → speaking (AI开始回复)
+    StateMachine->>SeqGen: 状态变更通知
+    SeqGen->>SeqGen: 切换为音量驱动模式
