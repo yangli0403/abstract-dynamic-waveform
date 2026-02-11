@@ -70,6 +70,8 @@ export class AbstractDynamicWaveform {
   private _container: HTMLElement | null = null;
   private _phase: number = 0;
   private _isAudioConnected: boolean = false;
+  private _lastFrameData: FrameData | null = null;
+  private _lastAudioFeatures: AudioFeatures | null = null;
 
   // 事件系统
   private _eventListeners: Map<WaveformEvent, Set<Function>> = new Map();
@@ -198,9 +200,36 @@ export class AbstractDynamicWaveform {
     }
   }
 
+  /** 设置混合情感（如 new Map([['happy', 0.7], ['excited', 0.3]])) */
+  setBlendedEmotion(emotions: Map<EmotionType, number>): void {
+    // 按权重混合情感颜色预设
+    // 选择权重最高的情感作为主情感
+    let maxWeight = 0;
+    let dominantEmotion: EmotionType = 'neutral';
+    for (const [emotion, weight] of emotions) {
+      if (weight > maxWeight) {
+        maxWeight = weight;
+        dominantEmotion = emotion;
+      }
+    }
+    this.setEmotion(dominantEmotion);
+  }
+
   /** 清除手动情感，恢复自动检测 */
   clearEmotion(): void {
     this._emotionExtractor.clearManualEmotion();
+  }
+
+  // ==================== 数据访问 API ====================
+
+  /** 获取当前帧数据（只读快照） */
+  getFrameData(): Readonly<FrameData> | null {
+    return this._lastFrameData;
+  }
+
+  /** 获取当前音频特征（只读快照） */
+  getAudioFeatures(): Readonly<AudioFeatures> | null {
+    return this._lastAudioFeatures;
   }
 
   // ==================== 渲染器 API ====================
@@ -276,6 +305,8 @@ export class AbstractDynamicWaveform {
       phase: this._phase,
     };
 
+    this._lastFrameData = frameData;
+    this._lastAudioFeatures = features;
     this._renderer?.draw(frameData);
     this._emit('frameUpdate', frameData);
   }

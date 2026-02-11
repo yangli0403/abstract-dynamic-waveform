@@ -1,0 +1,35 @@
+{
+  "name": "abstract-dynamic-waveform",
+  "version": "0.1.0",
+  "description": "高性能、零依赖的AI语音交互视觉反馈引擎，融合三通道情感映射系统",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "audio-visualization",
+    "waveform",
+    "siri-wave",
+    "ai-voice",
+    "emotion-mapping",
+    "canvas",
+    "web-audio-api",
+    "typescript"
+  ],
+  "author": "Abstract Dynamic Waveform Contributors",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
