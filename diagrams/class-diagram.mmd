@@ -1,0 +1,221 @@
+classDiagram
+    direction TB
+
+    class AbstractDynamicWaveform {
+        -config: WaveformConfig
+        -audioAnalyzer: AudioAnalyzer
+        -featureExtractors: FeatureExtractors
+        -mappingCore: MappingCore
+        -stateMachine: StateMachine
+        -animationLoop: AnimationLoop
+        -renderer: IRenderer
+        +constructor(container: HTMLElement, config?: Partial~WaveformConfig~)
+        +start(): Promise~void~
+        +stop(): void
+        +setEmotion(emotion: EmotionType): void
+        +setBlendedEmotion(emotions: Map~EmotionType, number~): void
+        +setState(state: AgentState): void
+        +setRenderer(type: RendererType): void
+        +getFrameData(): FrameData
+        +on(event: WaveformEvent, callback: Function): void
+        +off(event: WaveformEvent, callback: Function): void
+        +dispose(): void
+    }
+
+    class AudioAnalyzer {
+        -audioContext: AudioContext
+        -analyserNode: AnalyserNode
+        -sourceNode: MediaStreamAudioSourceNode
+        -fftSize: number
+        +constructor(config?: AudioConfig)
+        +connect(stream: MediaStream): void
+        +getFrequencyData(): Float32Array
+        +getTimeDomainData(): Float32Array
+        +disconnect(): void
+        +dispose(): void
+    }
+
+    class VolumeExtractor {
+        -smoothingFactor: number
+        -currentVolume: number
+        -peakVolume: number
+        +extract(frequencyData: Float32Array): VolumeData
+        +reset(): void
+    }
+
+    class PitchExtractor {
+        -sampleRate: number
+        -minFrequency: number
+        -maxFrequency: number
+        -confidenceThreshold: number
+        +extract(timeDomainData: Float32Array): PitchData
+        +reset(): void
+    }
+
+    class SpeedExtractor {
+        -vadThreshold: number
+        -windowSize: number
+        -activityHistory: boolean[]
+        +extract(frequencyData: Float32Array): SpeedData
+        +reset(): void
+    }
+
+    class EmotionExtractor {
+        -presets: Map~EmotionType, EmotionProfile~
+        -currentEmotion: EmotionType
+        -manualOverride: boolean
+        +extract(volume: VolumeData, pitch: PitchData, speed: SpeedData): EmotionData
+        +setManualEmotion(emotion: EmotionType): void
+        +reset(): void
+    }
+
+    class ColorChannel {
+        -presets: Map~EmotionType, HSLColor~
+        +map(emotion: EmotionData): HSLColor
+        +registerPreset(name: string, color: HSLColor): void
+    }
+
+    class ShapeChannel {
+        -amplitudeRange: AmplitudeRange
+        -spacingRange: SpacingRange
+        +map(volume: VolumeData, pitch: PitchData): ShapeParams
+    }
+
+    class DynamicChannel {
+        -speedRange: SpeedRange
+        -patterns: Map~string, WavePattern~
+        +map(speed: SpeedData, volume: VolumeData): DynamicParams
+    }
+
+    class UnifiedLerp {
+        -currentColor: HSLColor
+        -currentShape: ShapeParams
+        -currentDynamic: DynamicParams
+        -transitionDuration: number
+        +lerp(targetColor: HSLColor, targetShape: ShapeParams, targetDynamic: DynamicParams, dt: number): FrameVisuals
+        +setTransitionSpeed(speed: number): void
+    }
+
+    class StateMachine {
+        -state: AgentState
+        -listeners: Map~string, Function[]~
+        +getState(): AgentState
+        +transition(event: AgentEvent): void
+        +onStateChange(callback: StateChangeCallback): void
+        +offStateChange(callback: StateChangeCallback): void
+    }
+
+    class SequenceGenerator {
+        -currentSequence: number[][]
+        -index: number
+        -rendererType: RendererType
+        +generate(state: AgentState, config: SequenceConfig): AnimationSequence
+        +next(): SequenceFrame
+        +reset(): void
+    }
+
+    class AnimationLoop {
+        -running: boolean
+        -lastTimestamp: number
+        -frameCallback: FrameCallback
+        +start(callback: FrameCallback): void
+        +stop(): void
+        +isRunning(): boolean
+    }
+
+    class IRenderer {
+        <<interface>>
+        +mount(container: HTMLElement): void
+        +draw(frame: FrameData): void
+        +onStateChange(state: AgentState): void
+        +resize(): void
+        +dispose(): void
+    }
+
+    class ClassicWaveRenderer {
+        -canvas: HTMLCanvasElement
+        -ctx: CanvasRenderingContext2D
+        -curves: ClassicCurve[]
+        +mount(container: HTMLElement): void
+        +draw(frame: FrameData): void
+        +onStateChange(state: AgentState): void
+        +resize(): void
+        +dispose(): void
+    }
+
+    class iOS9WaveRenderer {
+        -canvas: HTMLCanvasElement
+        -ctx: CanvasRenderingContext2D
+        -curves: iOS9Curve[]
+        +mount(container: HTMLElement): void
+        +draw(frame: FrameData): void
+        +onStateChange(state: AgentState): void
+        +resize(): void
+        +dispose(): void
+    }
+
+    class BarRenderer {
+        -container: HTMLElement
+        -bars: HTMLElement[]
+        -barCount: number
+        +mount(container: HTMLElement): void
+        +draw(frame: FrameData): void
+        +onStateChange(state: AgentState): void
+        +resize(): void
+        +dispose(): void
+    }
+
+    class GridRenderer {
+        -container: HTMLElement
+        -cells: HTMLElement[][]
+        -rows: number
+        -cols: number
+        +mount(container: HTMLElement): void
+        +draw(frame: FrameData): void
+        +onStateChange(state: AgentState): void
+        +resize(): void
+        +dispose(): void
+    }
+
+    class RadialRenderer {
+        -container: HTMLElement
+        -segments: HTMLElement[]
+        -segmentCount: number
+        +mount(container: HTMLElement): void
+        +draw(frame: FrameData): void
+        +onStateChange(state: AgentState): void
+        +resize(): void
+        +dispose(): void
+    }
+
+    AbstractDynamicWaveform --> AudioAnalyzer
+    AbstractDynamicWaveform --> StateMachine
+    AbstractDynamicWaveform --> AnimationLoop
+    AbstractDynamicWaveform --> IRenderer
+    AbstractDynamicWaveform --> UnifiedLerp
+
+    AudioAnalyzer --> VolumeExtractor
+    AudioAnalyzer --> PitchExtractor
+    AudioAnalyzer --> SpeedExtractor
+    VolumeExtractor --> EmotionExtractor
+    PitchExtractor --> EmotionExtractor
+    SpeedExtractor --> EmotionExtractor
+
+    EmotionExtractor --> ColorChannel
+    VolumeExtractor --> ShapeChannel
+    PitchExtractor --> ShapeChannel
+    SpeedExtractor --> DynamicChannel
+    VolumeExtractor --> DynamicChannel
+
+    ColorChannel --> UnifiedLerp
+    ShapeChannel --> UnifiedLerp
+    DynamicChannel --> UnifiedLerp
+
+    StateMachine --> SequenceGenerator
+    AnimationLoop --> IRenderer
+
+    IRenderer <|.. ClassicWaveRenderer
+    IRenderer <|.. iOS9WaveRenderer
+    IRenderer <|.. BarRenderer
+    IRenderer <|.. GridRenderer
+    IRenderer <|.. RadialRenderer
